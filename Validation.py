@@ -153,17 +153,16 @@ def analyze_sleep_conduciveness():
     
     is_tempo_conducive = 60 <= tempo <= 80
     score = (
-        0.3 * percentage_optimal +
-        0.3 * (100 if is_tempo_conducive else 0) +
-        0.2 * freq_presence_percentage +
-        0.2 * volume_consistency
+        0.5 * percentage_optimal +  # Adjusted weight
+        0.25 * freq_presence_percentage +  # Adjusted weight
+        0.25 * volume_consistency  # Adjusted weight
     )
     
     print("\nSleep Conduciveness Analysis:")
     print(f"Overall Score: {score:.1f}/100")
     print(f"\nDetailed Metrics:")
     print(f"- Optimal characteristics coverage: {percentage_optimal:.1f}%")
-    print(f"- Tempo: {tempo:.1f} BPM ({'Conducive' if is_tempo_conducive else 'Not conducive'})")
+    print(f"- Tempo: {tempo:.1f} BPM ({'Conducive' if is_tempo_conducive else 'Minimal Effect'})")
     print(f"- Target frequency presence: {freq_presence_percentage:.1f}%")
     print(f"- Volume consistency: {volume_consistency:.1f}%")
     
