@@ -1,0 +1,78 @@
+import numpy as np
+import pandas as pd
+import librosa
+import librosa.display
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
+import os
+
+# Feature extraction function
+def extract_features(file_path):
+    y, sr = librosa.load(file_path, mono=True)
+    
+    # Tempo (BPM)
+    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+    
+    # Spectral features
+    spectral_centroid = np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
+    spectral_bandwidth = np.mean(librosa.feature.spectral_bandwidth(y=y, sr=sr))
+    
+    # MFCCs (First 13 Coefficients)
+    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+    mfccs_mean = np.mean(mfccs, axis=1)
+    
+    # Chroma features
+    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
+    chroma_mean = np.mean(chroma, axis=1)
+    
+    # Low-Frequency Emphasis
+    cqt = librosa.amplitude_to_db(np.abs(librosa.cqt(y, sr=sr)), ref=np.max)
+    low_freq_emphasis = np.mean(cqt[:int(cqt.shape[0] * 0.2), :])
+    
+    # Combine all extracted features
+    feature_vector = [tempo, spectral_centroid, spectral_bandwidth, low_freq_emphasis] + list(mfccs_mean) + list(chroma_mean)
+    return feature_vector
+
+# Function to build feature database
+def build_feature_database(directory):
+    data = []
+    for file in os.listdir(directory):
+        if file.endswith(".mp3") or file.endswith(".wav"):
+            file_path = os.path.join(directory, file)
+            features = extract_features(file_path)
+            data.append([file] + features)
+    
+    # Convert to DataFrame
+    columns = ["filename", "tempo", "spectral_centroid", "spectral_bandwidth", "low_freq_emphasis"] + \
+              [f"mfcc_{i}" for i in range(13)] + [f"chroma_{i}" for i in range(12)]
+    df = pd.DataFrame(data, columns=columns)
+    df.to_csv("music_features.csv", index=False)
+    print("Feature database saved!")
+
+# Function to recommend similar songs
+def recommend_song(input_song, num_recommendations=5):
+    # Load feature database
+    df = pd.read_csv("music_features.csv")
+    
+    # Extract features of the input song
+    input_features = extract_features(input_song)
+    
+    # Prepare feature matrix
+    feature_matrix = df.iloc[:, 1:].values  # Exclude filenames
+    scaler = StandardScaler()
+    feature_matrix = scaler.fit_transform(feature_matrix)
+    input_features = scaler.transform([input_features])
+    
+    # Compute cosine similarity
+    similarities = cosine_similarity(input_features, feature_matrix)[0]
+    
+    # Get top similar songs
+    df["similarity"] = similarities
+    recommendations = df.sort_values(by="similarity", ascending=False).head(num_recommendations)
+    
+    print("Recommended Tracks:")
+    print(recommendations[["filename", "similarity"]])
+
+# Example usage:
+# build_feature_database("C:\\Thesis\\data\\sleep_music")  # Run once to create database
+# recommend_song("C:\\Thesis\\data\\sleep_music\\example_song.mp3")

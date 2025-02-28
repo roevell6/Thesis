@@ -1,0 +1,84 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" version="26.0.16">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="1426" dy="747" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="6SnYFhyQfyE02t3DinKU-0" value="Start" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="58" y="17" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="GsCyvp340WhaNO5IiIzR-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-1" target="6SnYFhyQfyE02t3DinKU-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-1" value="Load Audio File&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="201" y="27" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-3" target="6SnYFhyQfyE02t3DinKU-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-3" value="Compute STFT" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="203" y="108" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-4" target="6SnYFhyQfyE02t3DinKU-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-4" value="Compute MFCC" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="108" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-5" target="6SnYFhyQfyE02t3DinKU-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-5" value="Generate Time &amp;amp; Frequency Axes" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="185" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-6" target="6SnYFhyQfyE02t3DinKU-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-6" value="Create Frequency Mask" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="264" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-7" target="6SnYFhyQfyE02t3DinKU-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-7" value="Create Volume Mask" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="347" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-8" target="6SnYFhyQfyE02t3DinKU-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-8" value="Plot Spectogram &amp;amp; MFCCs" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="513" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-9" target="6SnYFhyQfyE02t3DinKU-10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-9" value="Perform Detailed Analysis" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="596" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-10" target="6SnYFhyQfyE02t3DinKU-24" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="306" y="821" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-10" value="Compute Overall Statistics&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="679" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-11" target="6SnYFhyQfyE02t3DinKU-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-11" value="Determine Sleep-Conducive Regions" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="363" y="430" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-12" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="6SnYFhyQfyE02t3DinKU-0" target="6SnYFhyQfyE02t3DinKU-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="276" y="302" as="sourcePoint" />
+            <mxPoint x="326" y="252" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6SnYFhyQfyE02t3DinKU-24" value="End" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="223" y="669" width="80" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

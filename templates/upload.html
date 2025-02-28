@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff; /* White background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            
+        }
+        .upload-container {
+            background-color: #f5f5f5; /* Light gray container */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid #ddd; /* Light gray border */
+        }
+        .upload-container h1 {
+            margin-bottom: 20px;
+            color: #9400d3; /* Black text */
+        }
+        .upload-container input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .upload-container button {
+            background-color: black; /* Black button */
+            color: white; /* White text */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-container button:hover {
+            background-color: #333; /* Dark gray on hover */
+        }
+       
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>Upload Your Songs</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="files" multiple required> 
+            <br>
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white; /* White background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .success-container {
+            background-color: #f5f5f5; /* Light gray container */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid #ddd; /* Light gray border */
+        }
+        .success-container h1 {
+            margin-bottom: 20px;
+            color: black; /* Black text */
+        }
+        .success-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .success-container ul li {
+            margin: 10px 0;
+            color: #333; /* Dark gray text */
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <h1>Songs Uploaded Successfully!</h1>
+        <p>Uploaded Files:</p>
+        <ul>
+            {% for file_name in file_names %}
+                <li>{{ file_name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
