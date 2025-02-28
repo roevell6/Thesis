@@ -1,4 +1,4 @@
-# Audio Spectrogram Analysis
+#Identifying Sleep-Conducive Audio Features in Music Using Spectral Analysis, and Deep Learning with Prescriptive Analysis for Enhanced Sleep Quality
 
 A Python-based tool for analyzing audio files and generating spectrograms with specific frequency detection capabilities.
 
