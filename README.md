@@ -1,17 +1,33 @@
-# Thesis
-# Identifying Sleep-Conducive Audio Features in Music Using Spectral Analysis, and Deep Learning with Prescriptive Analysis for Enhanced Sleep Quality
+# Audio Spectrogram Analysis
 
-This project processes audio files and generates spectrograms using various audio analysis techniques including STFT, MFCC, and CQT.
+A Python-based tool for analyzing audio files and generating spectrograms with specific frequency detection capabilities.
 
 ## Features
-- Audio processing with STFT, MFCC, and CQT
-- Parallel processing using ThreadPoolExecutor
-- Generation of 224x224 spectrograms for 5-second segments
-- Analysis of optimal audio characteristics
+- STFT (Short-time Fourier Transform) analysis
+- MFCC (Mel-frequency cepstral coefficients) computation
+- CQT (Constant-Q Transform) analysis
+- Multi-threaded audio processing
+- Frequency band detection (2-12 Hz and 425-440 Hz)
+- Automated spectrogram generation and saving
+
+## Requirements
+- Python 3.x
+- soundfile
+- librosa
+- numpy
+- matplotlib
 
 ## Setup
 1. Clone the repository
-2. Create virtual environment (recommended):
-```python
-python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
+2. Install dependencies:
+```pip install -r requirements.txt```
+
+## Usage
+1. Place your audio file in the `data` directory
+2. Update the file path in `Spectogram.py`
+3. Run the script:
+```python Spectogram.py```
+
+## Output
+- Generates spectrograms in the `spectrograms` directory
+- Provides analysis of optimal audio characteristics
