@@ -5,7 +5,7 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_path = "C:\\Thesis\\data\\Clairo  Juna.mp3"
+file_path = "C:\\Thesis\\data\\The Maras  Over The Moon.mp3"
 
 try:
     y, sr = sf.read(file_path, always_2d=True)  
@@ -162,14 +162,14 @@ def analyze_sleep_conduciveness():
         0.4 * percentage_optimal +  # Adjusted weight to 40%
         0.25 * freq_presence_percentage +  # Unchanged weight
         0.25 * volume_consistency +  # Unchanged weight
-        0.1 * (60 <= tempo <= 80) * 100  # Added BPM analysis at 10%
+        0.1 * (60 <= local_tempo <= 80) * 100  # Added BPM analysis at 10%
     )
     
     print("\nSleep Conduciveness Analysis:")
     print(f"Overall Score: {score:.1f}/100")
     print(f"\nDetailed Metrics:")
     print(f"- Optimal characteristics coverage: {percentage_optimal:.1f}%")
-    print(f"- Tempo: {tempo:.1f} BPM ({'Conducive' if is_tempo_conducive else 'Minimal Effect'})")
+    print(f"- Tempo: {local_tempo:.1f} BPM ")
     print(f"- Target frequency presence: {freq_presence_percentage:.1f}%")
     print(f"- Volume consistency: {volume_consistency:.1f}%")
     
