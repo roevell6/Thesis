@@ -5,19 +5,25 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_path = "C:\\Thesis\\data\\The Maras  Over The Moon.mp3"
+file_path = "C:\\Thesis\\data\\Clairo  Juna.mp3"
 
 try:
     y, sr = sf.read(file_path, always_2d=True)  
     if y.ndim > 1:
         y = np.mean(y, axis=1) 
+
+    # Normalize the audio signal to maximize volume
+    y = y / np.max(np.abs(y))
 except RuntimeError as e:
     print(f"Error loading audio file: {e}")
     exit(1)
 
-tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
-tempo = np.float64(tempo[0] if isinstance(tempo, np.ndarray) else tempo)
+# Compute the onset envelope
+onset_env = librosa.onset.onset_strength(y=y, sr=sr)
 
+# Estimate the tempo using the onset envelope
+tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr)
+tempo = np.float64(tempo[0] if isinstance(tempo, np.ndarray) else tempo)
 stft_result = None
 mfcc_result = None
 cqt_result = None  
@@ -153,9 +159,10 @@ def analyze_sleep_conduciveness():
     
     is_tempo_conducive = 60 <= tempo <= 80
     score = (
-        0.5 * percentage_optimal +  # Adjusted weight
-        0.25 * freq_presence_percentage +  # Adjusted weight
-        0.25 * volume_consistency  # Adjusted weight
+        0.4 * percentage_optimal +  # Adjusted weight to 40%
+        0.25 * freq_presence_percentage +  # Unchanged weight
+        0.25 * volume_consistency +  # Unchanged weight
+        0.1 * (60 <= tempo <= 80) * 100  # Added BPM analysis at 10%
     )
     
     print("\nSleep Conduciveness Analysis:")
