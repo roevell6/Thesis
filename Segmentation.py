@@ -8,7 +8,7 @@ import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-file_path = "C:\\Thesis\\data\\The Maras  Over The Moon.mp3"
+file_path = "C:\\Thesis\\data\\Apocalypse - Cigarettes After Sex [ ezmp3.cc ].mp3"
 
 y, sr = sf.read(file_path)
 if y.ndim > 1:
@@ -88,12 +88,21 @@ combined_presence = freq_presence & vol_presence
 
 combined_segments = find_segments(combined_presence, times)
 
-
+def get_next_sleep_conducive_number():
+    base_path = 'c:\\Thesis\\spectrograms'
+    existing_files = [f for f in os.listdir(base_path) if f.startswith('Sleep Conducive_') and f.endswith('.png')]
+    if not existing_files:
+        return 1
+    numbers = [int(f.split('_')[1].split('.')[0]) for f in existing_files]
+    return max(numbers) + 1 if numbers else 1
 
 def process_segment(y_segment, sr, start_time, segment_number):
     # Compute STFT for the segment
     D = librosa.stft(y_segment, n_fft=n_fft)
     D_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+    
+    # Get the next available number
+    next_number = get_next_sleep_conducive_number()
     
     # Save spectrogram for the segment with specific dimensions
     plt.figure(figsize=(2.24, 2.24))  # Set figure size to match desired output
@@ -101,22 +110,11 @@ def process_segment(y_segment, sr, start_time, segment_number):
     plt.axis('off')
     plt.tight_layout(pad=0)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    save_path = f'c:\\Thesis\\spectrograms\\Sleep Conducive_{segment_number}.png'
+    
+    # Use the Sleep Conducive naming convention with incremental numbers
+    save_path = f'c:\\Thesis\\spectrograms\\Sleep Conducive_{next_number}.png'
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0, dpi=100)  # Adjusted DPI to get 224x224
     plt.close()
-
-def get_next_spectrogram_number():
-    base_path = 'c:\\Thesis\\spectrograms'
-    existing_files = [f for f in os.listdir(base_path) if f.startswith('spectrogram_') and f.endswith('.png')]
-    if not existing_files:
-        return 1
-    numbers = [int(f.split('_')[1].split('.')[0]) for f in existing_files]
-    return max(numbers) + 1
-
-next_number = get_next_spectrogram_number()
-save_path = f'c:\\Thesis\\spectrograms\\spectrogram_{next_number}.png'
-
-
 
 # Segment the audio into 5-second chunks
 segment_duration = 5  # seconds
