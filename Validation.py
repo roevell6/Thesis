@@ -5,7 +5,7 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_path = "C:\\Thesis\\data\\The Maras  Over The Moon.mp3"
+file_path = "C:\\Thesis\\data\\Hip-Hop\\6LACK  Pretty Little Fears ft J Cole Official Music Video.mp3"
 
 try:
     y, sr = sf.read(file_path, always_2d=True)  
@@ -145,9 +145,6 @@ for i, (start, end) in enumerate(filtered_segments, 1):
         print(f"Peak frequency: {freqs[peak_freq_idx]:.1f} Hz")
     else:
         print("Peak frequency: nan Hz")
-total_duration = max_time
-optimal_duration = sum(end - start for start, end in filtered_segments)
-percentage_optimal = (optimal_duration / total_duration) * 100
 def analyze_sleep_conduciveness():
     total_duration = librosa.get_duration(y=y, sr=sr)
     optimal_duration = sum(end - start for start, end in filtered_segments)
@@ -157,19 +154,20 @@ def analyze_sleep_conduciveness():
     
     volume_consistency = np.mean(vol_presence) * 100
     
+    # Use the global tempo variable instead of local_tempo
     is_tempo_conducive = 60 <= tempo <= 80
     score = (
         0.4 * percentage_optimal +  # Adjusted weight to 40%
         0.25 * freq_presence_percentage +  # Unchanged weight
         0.25 * volume_consistency +  # Unchanged weight
-        0.1 * (60 <= local_tempo <= 80) * 100  # Added BPM analysis at 10%
+        0.1 * (60 <= tempo <= 80) * 100  # Added BPM analysis at 10%
     )
     
     print("\nSleep Conduciveness Analysis:")
     print(f"Overall Score: {score:.1f}/100")
     print(f"\nDetailed Metrics:")
     print(f"- Optimal characteristics coverage: {percentage_optimal:.1f}%")
-    print(f"- Tempo: {local_tempo:.1f} BPM ")
+    print(f"- Tempo: {tempo:.1f} BPM ")
     print(f"- Target frequency presence: {freq_presence_percentage:.1f}%")
     print(f"- Volume consistency: {volume_consistency:.1f}%")
     
