@@ -10,7 +10,7 @@ import matplotlib.colors as colors
 from scipy.interpolate import RegularGridInterpolator
 
 # File path
-file_path = "C:\\Thesis\\data\\Chilled 30 second (LOFI music_vibes) [sdZ-yo6c4T8].mp3"
+file_path = "C:\\Thesis\\data\\Indie\\Daniel Caesar, Rex Orange County - Rearrange My World (Audio).mp3"
 
 # Song loading 
 y, sr = sf.read(file_path)
@@ -169,24 +169,37 @@ def calculate_unified_sleep_score():
     # Create empty array to hold score for each time frame
     unified_score = np.zeros(min_frames)
     
-    # 1. STFT-based frequency and volume criteria (from original code)
+    # 1. STFT-based frequency and volume criteria - IMPROVED FREQUENCY DETECTION
     freq_mask = np.zeros_like(freqs, dtype=bool)
-    freq_mask[(freqs >= 425) & (freqs <= 440)] = True  # Around 432 Hz - healing frequency
+    # More precise detection of 432 Hz with narrower band
+    freq_mask[(freqs >= 430) & (freqs <= 434)] = True  # Narrower band around 432 Hz
     freq_mask[(freqs >= 1) & (freqs <= 100)] = True    # Low frequencies for relaxation
     
+    # Check for actual energy in these frequency bands, not just presence
+    freq_energy_432 = np.mean(stft_result[(freqs >= 430) & (freqs <= 434), :min_frames], axis=0)
+    freq_energy_low = np.mean(stft_result[(freqs >= 1) & (freqs <= 100), :min_frames], axis=0)
+    
+    # Normalize these energies
+    freq_energy_432_norm = MinMaxScaler().fit_transform(freq_energy_432.reshape(-1, 1)).flatten()
+    freq_energy_low_norm = MinMaxScaler().fit_transform(freq_energy_low.reshape(-1, 1)).flatten()
+    
+    # Combine with volume criteria
     vol_mask = np.logical_and(stft_result >= -50, stft_result <= 30)
-    
-    freq_presence = np.any(stft_result[freq_mask, :min_frames], axis=0)
     vol_presence = np.any(vol_mask[:, :min_frames], axis=0)
-    stft_score = np.logical_and(freq_presence, vol_presence).astype(float)
     
-    # 2. MFCC-based criteria (low MFCC variance indicates consistent timbre)
+    # New STFT score combines actual energy levels with volume criteria
+    stft_score = (freq_energy_432_norm * 0.3 + freq_energy_low_norm * 0.7) * vol_presence.astype(float)
+    
+    # 2. MFCC-based criteria - FIXED NORMALIZATION
     # Focus on first few MFCCs which relate to overall timbre
     mfcc_first_coefs = mfcc_result[:5, :min_frames]
     mfcc_variance = np.var(mfcc_first_coefs, axis=0)
     
+    # Clip extreme values before normalization to prevent outliers from skewing results
+    mfcc_variance_clipped = np.clip(mfcc_variance, np.percentile(mfcc_variance, 5), np.percentile(mfcc_variance, 95))
+    
     # Normalize variance (lower is better for sleep - consistent sounds)
-    mfcc_variance_norm = 1 - MinMaxScaler().fit_transform(mfcc_variance.reshape(-1, 1)).flatten()
+    mfcc_variance_norm = 1 - MinMaxScaler().fit_transform(mfcc_variance_clipped.reshape(-1, 1)).flatten()
     
     # Check for low energy in higher MFCCs (indicating smoother sounds)
     higher_mfcc_energy = np.mean(np.abs(mfcc_result[10:, :min_frames]), axis=0)
@@ -213,15 +226,39 @@ def calculate_unified_sleep_score():
     contrast_mean = np.mean(spectral_contrast[:, :min_frames], axis=0)
     contrast_norm = 1 - MinMaxScaler().fit_transform(contrast_mean.reshape(-1, 1)).flatten()
     
-    # Combine all scores with weights based on importance for sleep
+    # 6. NEW: BPM-based score (slower is better for sleep)
+    # Create a tempo score based on local tempo estimation
+    frame_duration = hop_length / sr  # Duration of each frame in seconds
+    window_size = int(3 / frame_duration)  # ~3 second windows for local tempo
+    
+    tempo_scores = np.zeros(min_frames)
+    for i in range(0, min_frames, window_size//2):  # 50% overlap between windows
+        end_idx = min(i + window_size, min_frames)
+        if end_idx - i > window_size // 2:  # Only process if window is large enough
+            frame_start = int(i * hop_length)
+            frame_end = int(end_idx * hop_length)
+            if frame_end - frame_start > sr:  # Ensure at least 1 second of audio
+                segment = y[frame_start:frame_end]
+                local_tempo, _ = librosa.beat.beat_track(y=segment, sr=sr)
+                # Convert tempo to score (lower tempo = higher score)
+                # Ideal sleep tempo is below 80 BPM
+                tempo_score = max(0, min(1, 2 - local_tempo/80))
+                tempo_scores[i:end_idx] = tempo_score
+    
+    # Fill any remaining zeros with the average
+    if np.any(tempo_scores == 0) and np.any(tempo_scores > 0):
+        tempo_scores[tempo_scores == 0] = np.mean(tempo_scores[tempo_scores > 0])
+    
+    # UPDATED WEIGHTS - Increased importance for BPM and timbre stability
     weights = {
-        'stft': 0.15,
-        'mfcc_variance': 0.15,
-        'mfcc_high_energy': 0.15,
-        'low_freq': 0.2,
-        'chroma_stability': 0.15,
-        'spectral_centroid': 0.1,
-        'spectral_contrast': 0.1
+        'stft': 0.10,              # Reduced from 0.15
+        'mfcc_variance': 0.20,     # Increased from 0.15
+        'mfcc_high_energy': 0.10,  # Reduced from 0.15
+        'low_freq': 0.15,          # Reduced from 0.20
+        'chroma_stability': 0.10,  # Reduced from 0.15
+        'spectral_centroid': 0.05, # Reduced from 0.10
+        'spectral_contrast': 0.05, # Reduced from 0.10
+        'tempo': 0.25              # New weight for tempo
     }
     
     unified_score = (
@@ -231,13 +268,23 @@ def calculate_unified_sleep_score():
         weights['low_freq'] * low_freq_score +
         weights['chroma_stability'] * chroma_stability +
         weights['spectral_centroid'] * spec_cent_norm +
-        weights['spectral_contrast'] * contrast_norm
+        weights['spectral_contrast'] * contrast_norm +
+        weights['tempo'] * tempo_scores
     )
     
     # Apply smoothing to prevent rapid fluctuations
     unified_score = np.convolve(unified_score, np.ones(5)/5, mode='same')
     
-    return unified_score
+    return unified_score, {
+        'stft_score': stft_score,
+        'mfcc_variance': mfcc_variance_norm,
+        'mfcc_high_energy': higher_mfcc_score,
+        'low_freq': low_freq_score,
+        'chroma_stability': chroma_stability,
+        'spectral_centroid': spec_cent_norm,
+        'spectral_contrast': contrast_norm,
+        'tempo_score': tempo_scores
+    }
 
 # Create unified spectrogram
 print("Creating unified spectrogram...")
@@ -245,7 +292,7 @@ unified_spectrogram, max_freq_idx, min_frames = create_unified_spectrogram()
 
 # Calculate the unified sleep score
 print("Calculating unified sleep score...")
-sleep_score = calculate_unified_sleep_score()
+sleep_score, component_scores = calculate_unified_sleep_score()  # Now returns component scores too
 
 # Set threshold for sleep-conducive regions
 threshold = 0.6  # Adjust based on validation
@@ -451,3 +498,35 @@ print("- STFT (red channel): Shows precise frequency and time information")
 print("- MFCC (green channel): Represents timbre and perceptual characteristics")
 print("- CQT (blue channel): Highlights harmonic structure and tonal properties")
 print("\nBrighter regions in each color channel indicate stronger presence of those features.")
+
+# Add this after the main visualization code, before the detailed analysis section
+# VALIDATION: Add a sanity check for known non-sleep-conducive music
+print("\nValidation Check:")
+# Check if the file is likely a non-sleep-conducive genre (metal, hard rock, etc.)
+filename = file_path.lower()
+non_sleep_genres = ['metal', 'rock', 'slipknot', 'psychosocial']
+is_likely_non_sleep = any(genre in filename for genre in non_sleep_genres)
+
+# Check if BPM is too high for sleep
+bpm_too_high = tempo > 90
+
+# Check if there's high spectral contrast (typical of energetic music)
+avg_contrast = np.mean(component_scores['spectral_contrast'])
+high_contrast = avg_contrast < 0.4  # Low score means high contrast
+
+# Combine validation checks
+validation_flags = []
+if is_likely_non_sleep:
+    validation_flags.append("Genre suggests non-sleep music")
+if bpm_too_high:
+    validation_flags.append(f"BPM ({tempo:.1f}) exceeds sleep threshold (90)")
+if high_contrast:
+    validation_flags.append("High spectral contrast suggests energetic music")
+
+if validation_flags:
+    print("WARNING: Potential false positive in sleep conduciveness detection:")
+    for flag in validation_flags:
+        print(f"- {flag}")
+    print(f"Consider adjusting threshold (currently {threshold}) or reviewing algorithm weights.")
+else:
+    print("No validation warnings detected.")

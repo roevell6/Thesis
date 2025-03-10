@@ -8,7 +8,7 @@ import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-file_path = "C:\\Thesis\\data\\The Maras  Over The Moon.mp3"
+file_path = "C:\\Thesis\\data\\Indie\\Daniel Caesar, Rex Orange County - Rearrange My World (Audio).mp3"
 
 y, sr = sf.read(file_path)
 if y.ndim > 1:

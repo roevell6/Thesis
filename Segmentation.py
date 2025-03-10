@@ -8,7 +8,7 @@ import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-file_path = "C:\\Thesis\\data\\Apocalypse - Cigarettes After Sex [ ezmp3.cc ].mp3"
+file_path = "C:\\Thesis\\data\\Indie\\The 1975 - Undo.mp3"
 
 y, sr = sf.read(file_path)
 if y.ndim > 1:
@@ -78,7 +78,7 @@ def find_segments(binary_array, times):
 
 freq_mask = np.zeros_like(freqs, dtype=bool)
 freq_mask[(freqs >= 2) & (freqs <= 12)] = True  
-freq_mask[(freqs >= 425) & (freqs <= 440)] = True  
+freq_mask[(freqs >= 425) & (freqs <= 512)] = True  
 
 vol_mask = np.logical_and(D_db >= -50, D_db <= 30)
 

@@ -1,11 +1,10 @@
-import threading
 import soundfile as sf
 import librosa
 import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_path = "C:\\Thesis\\data\\Hip-Hop\\6LACK  Pretty Little Fears ft J Cole Official Music Video.mp3"
+file_path = "C:\\Thesis\\data\\Indie\\Daniel Caesar, Rex Orange County - Rearrange My World (Audio).mp3"
 
 try:
     y, sr = sf.read(file_path, always_2d=True)  
@@ -13,7 +12,7 @@ try:
         y = np.mean(y, axis=1) 
 
     # Normalize the audio signal to maximize volume
-    y = y / np.max(np.abs(y))
+    y = (y / np.max(np.abs(y))).astype(np.float32)
 except RuntimeError as e:
     print(f"Error loading audio file: {e}")
     exit(1)
@@ -24,10 +23,11 @@ onset_env = librosa.onset.onset_strength(y=y, sr=sr)
 # Estimate the tempo using the onset envelope
 tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr)
 tempo = np.float64(tempo[0] if isinstance(tempo, np.ndarray) else tempo)
+
+# Initialize global results
 stft_result = None
 mfcc_result = None
 cqt_result = None  
-computation_lock = threading.Lock()  
 
 def compute_stft():
     global stft_result
@@ -36,15 +36,13 @@ def compute_stft():
     if n_fft % 2 != 0:  
         n_fft -= 1
     D = librosa.stft(y, n_fft=n_fft)
-    with computation_lock:
-        stft_result = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+    stft_result = librosa.amplitude_to_db(np.abs(D), ref=np.max)
     print("STFT computation complete.")
 
 def compute_mfcc():
     global mfcc_result
     print("Computing MFCC...")
-    with computation_lock:
-        mfcc_result = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+    mfcc_result = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
     print("MFCC computation complete.")
 
 def compute_cqt():
@@ -52,30 +50,23 @@ def compute_cqt():
     print("Computing CQT...")
     try:
         C = librosa.cqt(y, sr=sr, fmin=librosa.note_to_hz('C1'))
-        with computation_lock:
-            cqt_result = librosa.amplitude_to_db(np.abs(C), ref=np.max)
+        cqt_result = librosa.amplitude_to_db(np.abs(C), ref=np.max)
     except ValueError as e:
         print(f"Error in CQT computation: {e}")
         cqt_result = None
     print("CQT computation complete.")
 
-stft_thread = threading.Thread(target=compute_stft)
-mfcc_thread = threading.Thread(target=compute_mfcc)
-cqt_thread = threading.Thread(target=compute_cqt) 
-
-stft_thread.start()
-mfcc_thread.start()
-cqt_thread.start() 
-
-stft_thread.join()
-mfcc_thread.join()
-cqt_thread.join()  
+# Run computations sequentially (no threading)
+compute_stft()
+compute_mfcc()
+compute_cqt()
 
 print("STFT, MFCC, and CQT computations are complete.")
+
+# Time and frequency analysis
 n_fft = 2048
 hop_length = n_fft // 4 
 times = librosa.frames_to_time(np.arange(stft_result.shape[1]), sr=sr, hop_length=hop_length)
-
 freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
 
 def find_segments(binary_array, times):
@@ -95,11 +86,29 @@ def find_segments(binary_array, times):
             segments.append((times[start_idx], times[-1]))
     
     return segments
+
 freq_mask = np.zeros_like(freqs, dtype=bool)
-freq_mask[(freqs >= 425) & (freqs <= 440)] = True  
+freq_mask[(freqs < 520)] = True  # All frequencies below 520 Hz are target frequencies
+
+# Calculate average intensity of target frequencies relative to overall intensity
+freq_intensities = np.mean(stft_result[freq_mask, :], axis=0)
+overall_intensities = np.mean(stft_result, axis=0)
+freq_presence = np.clip(freq_intensities / (overall_intensities + 1e-10), 0, 1)
+freq_presence_percentage = np.mean(freq_presence) * 100
+
+# Check if frequencies outside the target range are dominant
+outside_freq_mask = ~freq_mask  # Frequencies 520 Hz and above
+outside_freq_intensities = np.mean(stft_result[outside_freq_mask, :], axis=0)
+
+# Calculate the relative intensity of non-target frequencies compared to target frequencies
+# This ensures we're measuring dominance rather than just presence
+target_avg_intensity = np.mean(freq_intensities)
+outside_avg_intensity = np.mean(outside_freq_intensities)
+outside_freq_percentage = min(100, (outside_avg_intensity / (target_avg_intensity + 1e-10)) * 100)
 
 vol_mask = np.logical_and(stft_result >= -50, stft_result <= 30)
 
+# Only consider segments where target frequencies are present and not dominated by outside frequencies
 freq_presence = np.any(stft_result[freq_mask, :], axis=0)
 vol_presence = np.any(vol_mask, axis=0)
 combined_presence = freq_presence & vol_presence
@@ -108,7 +117,6 @@ max_time = librosa.get_duration(y=y, sr=sr)
 combined_segments = find_segments(combined_presence, times)
 filtered_segments = [(start, end) for start, end in combined_segments 
                     if end <= max_time and (end - start) >= 1.0]
-
 
 print("\nDetailed Analysis of Sleep-Conducive Regions:")
 for i, (start, end) in enumerate(filtered_segments, 1):
@@ -145,6 +153,7 @@ for i, (start, end) in enumerate(filtered_segments, 1):
         print(f"Peak frequency: {freqs[peak_freq_idx]:.1f} Hz")
     else:
         print("Peak frequency: nan Hz")
+
 def analyze_sleep_conduciveness():
     total_duration = librosa.get_duration(y=y, sr=sr)
     optimal_duration = sum(end - start for start, end in filtered_segments)
@@ -154,13 +163,16 @@ def analyze_sleep_conduciveness():
     
     volume_consistency = np.mean(vol_presence) * 100
     
-    # Use the global tempo variable instead of local_tempo
     is_tempo_conducive = 60 <= tempo <= 80
+    
+    # Penalize if frequencies outside the target range are too dominant
+    freq_balance_factor = max(0, 1 - (outside_freq_percentage / 100))
+    
     score = (
-        0.4 * percentage_optimal +  # Adjusted weight to 40%
-        0.25 * freq_presence_percentage +  # Unchanged weight
-        0.25 * volume_consistency +  # Unchanged weight
-        0.1 * (60 <= tempo <= 80) * 100  # Added BPM analysis at 10%
+        0.4 * percentage_optimal *  freq_balance_factor +  
+        0.25 * freq_presence_percentage *  freq_balance_factor +  
+        0.25 * volume_consistency +  
+        0.1 * (60 <= tempo <= 80) * 100  
     )
     
     print("\nSleep Conduciveness Analysis:")
@@ -168,7 +180,8 @@ def analyze_sleep_conduciveness():
     print(f"\nDetailed Metrics:")
     print(f"- Optimal characteristics coverage: {percentage_optimal:.1f}%")
     print(f"- Tempo: {tempo:.1f} BPM ")
-    print(f"- Target frequency presence: {freq_presence_percentage:.1f}%")
+    print(f"- Target frequency presence (below 520 Hz): {freq_presence_percentage:.1f}%")
+    print(f"- Non-target frequency presence (520 Hz and above): {outside_freq_percentage:.1f}%")
     print(f"- Volume consistency: {volume_consistency:.1f}%")
     
     if score >= 80:
@@ -179,16 +192,4 @@ def analyze_sleep_conduciveness():
         print("\nVerdict: Not particularly sleep-conducive")
 
 if __name__ == "__main__":
-    threads = [
-        threading.Thread(target=compute_stft),
-        threading.Thread(target=compute_mfcc),
-        threading.Thread(target=compute_cqt)
-    ]
-    
-    for thread in threads:
-        thread.start()
-    
-    for thread in threads:
-        thread.join()
-    
     analyze_sleep_conduciveness()
